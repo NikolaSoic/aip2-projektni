@@ -450,3 +450,93 @@ void promijesajKocku(int broj_poteza)
     cout << endl
          << "Kocka je pomiješana!" << endl;
 }
+
+bool jeLiRiješeno()
+{
+    for (int lice = 0; lice < 6; lice++)
+    {
+        char boja = kocka[lice][0][0];
+        for (int i = 0; i < VELICINA; i++)
+        {
+            for (int j = 0; j < VELICINA; j++)
+            {
+                if (kocka[lice][i][j] != boja)
+                {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+void spremiRezultat(const char *ime)
+{
+    double vrijeme_igre = igra_aktivna ? (trenutno_vrijeme() - pocetno_vrijeme) : 0;
+
+    // Spremi u tekstualnu datoteku
+    ofstream datoteka("leaderboard.txt", ios::app);
+    if (datoteka.is_open())
+    {
+        char datum[30];
+        trenutni_datum(datum);
+
+        datoteka << ime << "," << vrijeme_igre << "," << ukupan_broj_poteza << ",";
+        datoteka << (jeLiRiješeno() ? "RIJESENO" : "NEDOVRSENO") << "," << datum << endl;
+        datoteka.close();
+        cout << "Rezultat uspješno spremljen u leaderboard!" << endl;
+        printf("Ime: %s, Vrijeme: %.0f sekundi, Potezi: %d\n", ime, vrijeme_igre, ukupan_broj_poteza);
+    }
+    else
+    {
+        cout << "Greška pri spremanju rezultata!" << endl;
+    }
+}
+
+// Automatsko spremanje rezultata na kraju igre
+void automatskoSpremiRezultat()
+{
+    double vrijeme_igre = igra_aktivna ? (trenutno_vrijeme() - pocetno_vrijeme) : 0;
+
+    // Spremi u tekstualnu datoteku
+    ofstream datoteka("leaderboard.txt", ios::app);
+    if (datoteka.is_open())
+    {
+        char datum[30];
+        trenutni_datum(datum);
+
+        datoteka << trenutni_igrac << "," << vrijeme_igre << "," << ukupan_broj_poteza << ",";
+        datoteka << (jeLiRiješeno() ? "RIJESENO" : "NEDOVRSENO") << "," << datum << endl;
+        datoteka.close();
+
+        cout << "\n========================================" << endl;
+        cout << "        REZULTAT AUTOMATSKI SPREMLJEN   " << endl;
+        cout << "========================================" << endl;
+        printf("Igrač: %s\n", trenutni_igrac);
+        printf("Vrijeme: %.0f sekundi\n", vrijeme_igre);
+        printf("Broj poteza: %d\n", ukupan_broj_poteza);
+        printf("Status: %s\n", jeLiRiješeno() ? "RIJEŠENO" : "NEDOVRŠENO");
+        cout << "========================================" << endl;
+    }
+    else
+    {
+        cout << "Greška pri spremanju rezultata!" << endl;
+    }
+}
+
+// Jednostavna implementacija sortiranja za nizove
+void sortirajRezultate(Rezultat *rezultati, int n)
+{
+    for (int i = 0; i < n - 1; i++)
+    {
+        for (int j = 0; j < n - i - 1; j++)
+        {
+            if (rezultati[j].vrijeme > rezultati[j + 1].vrijeme)
+            {
+                Rezultat temp = rezultati[j];
+                rezultati[j] = rezultati[j + 1];
+                rezultati[j + 1] = temp;
+            }
+        }
+    }
+}
