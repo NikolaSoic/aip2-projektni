@@ -833,3 +833,161 @@ void ispisiStatistike()
         }
     }
 }
+
+int main()
+{
+    int izbor;
+    char unos[10];
+
+    // Inicijalizacija
+    inicijalizirajKocku();
+
+    while (true)
+    {
+// Čišćenje ekrana
+#ifdef _WIN32
+        system("cls");
+#else
+        system("clear");
+#endif
+
+        ispisiNaslov();
+        ispisiStatistike();
+
+        cout << "\n=== GLAVNI MENI ===" << endl;
+        cout << "1. Pravila igre" << endl;
+        cout << "2. Nova igra (unesi ime i promiješaj kocku)" << endl;
+        cout << "3. Prikaži kocku" << endl;
+        cout << "4. Izvrši potez" << endl;
+        cout << "5. Prikaži leaderboard" << endl;
+        cout << "6. Završi trenutnu igru" << endl;
+        cout << "7. Izlaz" << endl;
+        cout << "\nUnesite vaš izbor: ";
+        cin >> izbor;
+
+        switch (izbor)
+        {
+        case 1:
+        {
+#ifdef _WIN32
+            system("cls");
+#else
+            system("clear");
+#endif
+            ispisiPravila();
+            cout << "\nPritisnite Enter za nastavak...";
+            cin.ignore();
+            cin.get();
+            break;
+        }
+
+        case 2:
+        {
+            // Nova igra s unosom imena
+            zapocniNovuIgru();
+
+            cout << "\nPritisnite Enter za nastavak...";
+            cin.ignore();
+            cin.get();
+            break;
+        }
+
+        case 3:
+        {
+            ispisiKocku();
+            cout << "\nPritisnite Enter za nastavak...";
+            cin.ignore();
+            cin.get();
+            break;
+        }
+
+        case 4:
+        {
+            if (!igra_aktivna)
+            {
+                cout << "Igra nije aktivna! Prvo započnite novu igru." << endl;
+            }
+            else
+            {
+                cout << "Unesite potez (npr. F, R', U): ";
+                cin >> unos;
+
+                izvrsiPotez(unos);
+                cout << "Potez izvršen: " << unos << endl;
+                cout << "Ukupno poteza: " << ukupan_broj_poteza << endl;
+                double trenutno = trenutno_vrijeme() - pocetno_vrijeme;
+                printf("Vrijeme: %.0fs\n", trenutno);
+
+                if (jeLiRiješeno())
+                {
+                    cout << "\n****************************************" << endl;
+                    cout << "    ČESTITAMO! KOCKA JE RIJEŠENA!      " << endl;
+                    cout << "****************************************" << endl;
+                    cout << "Idite na opciju 6 da završite igru i spremite rezultat!" << endl;
+                }
+            }
+
+            cout << "\nPritisnite Enter za nastavak...";
+            cin.ignore();
+            cin.get();
+            break;
+        }
+
+        case 5:
+        {
+            prikaziLeaderboard();
+
+            cout << "\nPritisnite Enter za nastavak...";
+            cin.ignore();
+            cin.get();
+            break;
+        }
+
+        case 6:
+        {
+            if (!igra_aktivna)
+            {
+                cout << "Nema aktivne igre za završetak!" << endl;
+            }
+            else
+            {
+                zavrsiIgru();
+            }
+
+            cout << "\nPritisnite Enter za nastavak...";
+            cin.ignore();
+            cin.get();
+            break;
+        }
+
+        case 7:
+        {
+            // Ako je igra aktivna, pitaj da li želi završiti
+            if (igra_aktivna)
+            {
+                cout << "Imate aktivnu igru! Želite li je završiti prije izlaska? (d/n): ";
+                char odgovor;
+                cin >> odgovor;
+                if (odgovor == 'd' || odgovor == 'D')
+                {
+                    zavrsiIgru();
+                }
+            }
+
+            cout << "Hvala na igranju! Doviđenja!" << endl;
+            return 0;
+        }
+
+        default:
+        {
+            cout << "Neispravni izbor! Pokušajte ponovo." << endl;
+            cout << "\nPritisnite Enter za nastavak...";
+            cin.ignore();
+            cin.get();
+            break;
+        }
+        }
+    }
+
+    return 0;
+}
