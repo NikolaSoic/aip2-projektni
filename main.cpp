@@ -714,3 +714,70 @@ void prikaziLeaderboard()
         }
     }
 }
+void zapocniNovuIgru()
+{
+    // Prvo tražimo ime igrača
+    cout << "\n========================================" << endl;
+    cout << "            NOVA IGRA                   " << endl;
+    cout << "========================================" << endl;
+    cout << "Unesite ime igrača: ";
+    cin.ignore(); // Očisti buffer
+    cin.getline(trenutni_igrac, sizeof(trenutni_igrac));
+
+    // Provjeri da li je ime prazno
+    if (strlen(trenutni_igrac) == 0)
+    {
+        strcpy(trenutni_igrac, "Nepoznati_Igrac");
+        cout << "Koristi se ime: " << trenutni_igrac << endl;
+    }
+
+    cout << "Broj poteza za miješanje (preporučeno 15-25): ";
+    int br_poteza;
+    cin >> br_poteza;
+    if (br_poteza < 1 || br_poteza > 100)
+        br_poteza = 20;
+
+    inicijalizirajKocku();
+    promijesajKocku(br_poteza);
+
+    // Započni igru
+    pocetno_vrijeme = trenutno_vrijeme();
+    igra_aktivna = true;
+    ukupan_broj_poteza = 0;
+
+    cout << "\n========================================" << endl;
+    cout << "Igrač: " << trenutni_igrac << endl;
+    cout << "Igra započeta! Vrijeme se mjeri..." << endl;
+    cout << "========================================" << endl;
+}
+
+void zavrsiIgru()
+{
+    if (!igra_aktivna)
+    {
+        cout << "Nema aktivne igre za završetak!" << endl;
+        return;
+    }
+
+    igra_aktivna = false;
+    double ukupno_vrijeme = trenutno_vrijeme() - pocetno_vrijeme;
+
+    cout << "\n========================================" << endl;
+    cout << "             IGRA ZAVRŠENA              " << endl;
+    cout << "========================================" << endl;
+    cout << "Igrač: " << trenutni_igrac << endl;
+    printf("Vrijeme: %.0f sekundi\n", ukupno_vrijeme);
+    cout << "Broj poteza: " << ukupan_broj_poteza << endl;
+
+    if (jeLiRiješeno())
+    {
+        cout << "Status: KOCKA JE RIJEŠENA! ČESTITAMO!" << endl;
+    }
+    else
+    {
+        cout << "Status: Kocka nije riješena" << endl;
+    }
+
+    // Automatski spremi rezultat
+    automatskoSpremiRezultat();
+}
