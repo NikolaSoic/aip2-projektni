@@ -61,3 +61,98 @@ void trenutni_datum(char *buffer)
 
     strftime(buffer, 30, "%Y-%m-%d %H:%M:%S", timeinfo);
 }
+void inicijalizirajKocku()
+{
+    char boje[] = {BIJELA, NARANCASTA, ZELENA, CRVENA, PLAVA, ZUTA};
+    for (int i = 0; i < 6; i++)
+    {
+        for (int j = 0; j < VELICINA; j++)
+        {
+            for (int k = 0; k < VELICINA; k++)
+            {
+                kocka[i][j][k] = boje[i];
+            }
+        }
+    }
+}
+
+void ispisiKvadratBoje(char boja)
+{
+    switch (boja)
+    {
+    case CRVENA:
+        cout << "[\x1b[41m \x1b[0m]";
+        break;
+    case ZELENA:
+        cout << "[\x1b[42m \x1b[0m]";
+        break;
+    case PLAVA:
+        cout << "[\x1b[44m \x1b[0m]";
+        break;
+    case ZUTA:
+        cout << "[\x1b[43m \x1b[0m]";
+        break;
+    case NARANCASTA:
+        cout << "[\x1b[48;5;202m \x1b[0m]";
+        break;
+    case BIJELA:
+        cout << "[\x1b[47m \x1b[0m]";
+        break;
+    }
+}
+
+void ispisiKocku()
+{
+    cout << "\n=== RUBIKOVA KOCKA ===" << endl;
+
+    // Prikaz gornjeg lica
+    cout << "      GORNJE (W)" << endl;
+    for (int i = 0; i < VELICINA; i++)
+    {
+        cout << "    ";
+        for (int j = 0; j < VELICINA; j++)
+        {
+            ispisiKvadratBoje(kocka[GORNJE][i][j]);
+        }
+        cout << endl;
+    }
+
+    // Prikaz srednjeg reda
+    cout << "\nL(O) F(G) R(R) B(B)" << endl;
+    for (int i = 0; i < VELICINA; i++)
+    {
+        for (int j = 0; j < VELICINA; j++)
+        {
+            ispisiKvadratBoje(kocka[LIJEVO][i][j]);
+        }
+        cout << " ";
+        for (int j = 0; j < VELICINA; j++)
+        {
+            ispisiKvadratBoje(kocka[PREDNJE][i][j]);
+        }
+        cout << " ";
+        for (int j = 0; j < VELICINA; j++)
+        {
+            ispisiKvadratBoje(kocka[DESNO][i][j]);
+        }
+        cout << " ";
+        for (int j = 0; j < VELICINA; j++)
+        {
+            ispisiKvadratBoje(kocka[STRAZNJE][i][j]);
+        }
+        cout << endl;
+    }
+
+    // Prikaz donjeg lica
+    cout << "\n      DONJE (Y)" << endl;
+    for (int i = 0; i < VELICINA; i++)
+    {
+        cout << "    ";
+        for (int j = 0; j < VELICINA; j++)
+        {
+            ispisiKvadratBoje(kocka[DONJE][i][j]);
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
