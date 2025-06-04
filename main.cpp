@@ -540,3 +540,177 @@ void sortirajRezultate(Rezultat *rezultati, int n)
         }
     }
 }
+
+void prikaziLeaderboard()
+{
+    ifstream datoteka("leaderboard.txt");
+    if (!datoteka.is_open())
+    {
+        cout << "\n=== LEADERBOARD ===" << endl;
+        cout << "Nema još uvijek zabilježenih rezultata." << endl;
+        cout << "Riješite kocku i spremite rezultat da vidite leaderboard!" << endl;
+        return;
+    }
+
+    Rezultat svi_rezultati[MAX_REZULTATA];
+    Rezultat rijeseni[MAX_REZULTATA];
+    int broj_svih = 0;
+    int broj_rijesenih = 0;
+
+    char linija[200];
+
+    // Učitaj sve rezultate
+    while (datoteka.getline(linija, sizeof(linija)) && broj_svih < MAX_REZULTATA)
+    {
+        if (strlen(linija) == 0)
+            continue;
+
+        // Parsiraj liniju (format: ime,vrijeme,potezi,status,datum)
+        char *token = strtok(linija, ",");
+        if (token == NULL)
+            continue;
+        strcpy(svi_rezultati[broj_svih].ime, token);
+
+        token = strtok(NULL, ",");
+        if (token == NULL)
+            continue;
+        svi_rezultati[broj_svih].vrijeme = atof(token);
+
+        token = strtok(NULL, ",");
+        if (token == NULL)
+            continue;
+        svi_rezultati[broj_svih].broj_poteza = atoi(token);
+
+        token = strtok(NULL, ",");
+        if (token == NULL)
+            continue;
+        svi_rezultati[broj_svih].rijeseno = (strcmp(token, "RIJESENO") == 0);
+
+        token = strtok(NULL, ",");
+        if (token == NULL)
+            continue;
+        strcpy(svi_rezultati[broj_svih].datum, token);
+
+        if (svi_rezultati[broj_svih].rijeseno && broj_rijesenih < MAX_REZULTATA)
+        {
+            rijeseni[broj_rijesenih] = svi_rezultati[broj_svih];
+            broj_rijesenih++;
+        }
+
+        broj_svih++;
+    }
+    datoteka.close();
+
+    // Sortiraj riješene po vremenu
+    sortirajRezultate(rijeseni, broj_rijesenih);
+
+    cout << "\n=========================================" << endl;
+    cout << "               LEADERBOARD               " << endl;
+    cout << "=========================================" << endl;
+
+    if (broj_rijesenih == 0)
+    {
+        cout << "\nJoš uvijek nema riješenih kocki!" << endl;
+        cout << "Budite prvi koji će riješiti kocku!" << endl;
+    }
+    else
+    {
+        cout << "\nNAJBOLJI REZULTATI (RIJEŠENI):" << endl;
+        cout << "-----------------------------------------" << endl;
+        cout << "POS.  IME              VRIJEME   POTEZI" << endl;
+        cout << "-----------------------------------------" << endl;
+
+        int max_prikaz = (broj_rijesenih < 10) ? broj_rijesenih : 10;
+        for (int i = 0; i < max_prikaz; i++)
+        {
+            printf("%2d.   %-15s %7.0fs    %4d\n",
+                   i + 1,
+                   rijeseni[i].ime,
+                   rijeseni[i].vrijeme,
+                   rijeseni[i].broj_poteza);
+        }
+
+        cout << "-----------------------------------------" << endl;
+    }
+
+    // Prikaži SVI POKUŠAJI - i riješeni i neriješeni
+    cout << "\n--- SVI POKUŠAJI SVIH IGRAČA ---" << endl;
+    if (broj_svih > 0)
+    {
+        cout << "IME              VRIJEME   POTEZI   STATUS      DATUM" << endl;
+        cout << "-------------------------------------------------------" << endl;
+
+        for (int i = 0; i < broj_svih; i++)
+        {
+            printf("%-15s %7.0fs    %4d     %-10s %s\n",
+                   svi_rezultati[i].ime,
+                   svi_rezultati[i].vrijeme,
+                   svi_rezultati[i].broj_poteza,
+                   svi_rezultati[i].rijeseno ? "RIJEŠENO" : "NEDOVRŠENO",
+                   svi_rezultati[i].datum);
+        }
+        cout << "-------------------------------------------------------" << endl;
+    }
+
+    // Statistike
+    cout << "\nSTATISTIKE:" << endl;
+    cout << "Ukupno pokušaja: " << broj_svih << endl;
+    cout << "Riješeno: " << broj_rijesenih << endl;
+    if (broj_svih > 0)
+    {
+        double postotak = (double(broj_rijesenih) / broj_svih) * 100.0;
+        printf("Postotak uspjeha: %.1f%%\n", postotak);
+    }
+    else
+    {
+        cout << "Postotak uspjeha: 0.0%" << endl;
+    }
+
+    if (broj_rijesenih > 0)
+    {
+        printf("Najbolje vrijeme: %.0fs (%s)\n", rijeseni[0].vrijeme, rijeseni[0].ime);
+
+        // Pronađi najbolji broj poteza
+        int min_potezi = rijeseni[0].broj_poteza;
+        int najbolji_index = 0;
+        for (int i = 1; i < broj_rijesenih; i++)
+        {
+            if (rijeseni[i].broj_poteza < min_potezi)
+            {
+                min_potezi = rijeseni[i].broj_poteza;
+                najbolji_index = i;
+            }
+        }
+        printf("Najmanji broj poteza: %d (%s)\n", min_potezi, rijeseni[najbolji_index].ime);
+    }
+
+    // Pokaži rezultate trenutnog igrača (ako postoji)
+    if (strlen(trenutni_igrac) > 0)
+    {
+        cout << "\n--- REZULTATI TRENUTNOG IGRAČA (" << trenutni_igrac << ") ---" << endl;
+        bool imaPokusaja = false;
+
+        for (int i = 0; i < broj_svih; i++)
+        {
+            if (strcmp(svi_rezultati[i].ime, trenutni_igrac) == 0)
+            {
+                if (!imaPokusaja)
+                {
+                    cout << "VRIJEME   POTEZI   STATUS     DATUM" << endl;
+                    cout << "-------------------------------------" << endl;
+                    imaPokusaja = true;
+                }
+                printf("%7.0fs   %4d     %-10s %s\n",
+                       svi_rezultati[i].vrijeme,
+                       svi_rezultati[i].broj_poteza,
+                       svi_rezultati[i].rijeseno ? "RIJEŠENO" : "NEDOVRŠENO",
+                       svi_rezultati[i].datum);
+            }
+        }
+
+        if (!imaPokusaja)
+        {
+            cout << "Još nema zabilježenih pokušaja za ovog igrača." << endl;
+        }
+    }
+}
