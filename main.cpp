@@ -386,3 +386,67 @@ void rotirajBPrim()
     rotirajB();
     rotirajB();
 }
+
+void izvrsiPotez(const char *potez)
+{
+    ukupan_broj_poteza++;
+
+    if (strcmp(potez, "F") == 0)
+        rotirajF();
+    else if (strcmp(potez, "F'") == 0)
+        rotirajFPrim();
+    else if (strcmp(potez, "R") == 0)
+        rotirajR();
+    else if (strcmp(potez, "R'") == 0)
+        rotirajRPrim();
+    else if (strcmp(potez, "U") == 0)
+        rotirajU();
+    else if (strcmp(potez, "U'") == 0)
+        rotirajUPrim();
+    else if (strcmp(potez, "L") == 0)
+        rotirajL();
+    else if (strcmp(potez, "L'") == 0)
+        rotirajLPrim();
+    else if (strcmp(potez, "D") == 0)
+        rotirajD();
+    else if (strcmp(potez, "D'") == 0)
+        rotirajDPrim();
+    else if (strcmp(potez, "B") == 0)
+        rotirajB();
+    else if (strcmp(potez, "B'") == 0)
+        rotirajBPrim();
+    else
+    {
+        cout << "Nepoznat potez: " << potez << endl;
+        ukupan_broj_poteza--; // Vrati brojač jer potez nije valjan
+    }
+}
+
+void promijesajKocku(int broj_poteza)
+{
+    cout << "Miješam kocku sa " << broj_poteza << " poteza..." << endl;
+
+    const char *mogući_potezi[] = {"F", "F'", "R", "R'", "U", "U'", "L", "L'", "D", "D'", "B", "B'"};
+    int broj_mogućih = 12;
+
+    // Jednostavan način generiranja pseudo-slučajnih brojeva
+    int seed = (int)(trenutno_vrijeme() * 1000) % 32768;
+
+    for (int i = 0; i < broj_poteza; i++)
+    {
+        seed = (seed * 1103515245 + 12345) % (1 << 31);
+        int index = abs(seed) % broj_mogućih;
+
+        const char *potez = mogući_potezi[index];
+
+        // Izvršava stvarni potez na kocki bez brojanja
+        ukupan_broj_poteza--; // Kompenzacija jer izvrsiPotez uvećava brojač
+        izvrsiPotez(potez);
+
+        cout << "Potez " << (i + 1) << ": " << potez << " ";
+        if ((i + 1) % 10 == 0)
+            cout << endl;
+    }
+    cout << endl
+         << "Kocka je pomiješana!" << endl;
+}
