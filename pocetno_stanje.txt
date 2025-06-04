@@ -1,0 +1,41 @@
+=== POČETNO STANJE NAKON MIJEŠANJA ===
+Datum/Vrijeme: 2025-06-04 16:40:52
+Vrijeme igre: 13.08 sekundi
+Broj poteza: 0
+Status: NIJE RIJEŠENO
+Korišteni potezi: L, B', B', R, F, L', L', B', F', L', F', D, R, D', R', D', F', F, U', F'
+
+=== RASPORED POLJA ===
+
+VRH(W):
+  B G M 
+  R W B 
+  R B W 
+
+LIJEVO(R):
+  M M Y 
+  W R G 
+  G M G 
+
+PREDNJE(G):
+  M Y Y 
+  R G W 
+  R G B 
+
+DESNO(B):
+  R M Y 
+  R B R 
+  W W G 
+
+STRAZNJE(Y):
+  B M G 
+  Y Y G 
+  W W R 
+
+DNO(M):
+  W B Y 
+  Y M B 
+  M Y B 
+
+=== KOMPAKTAN FORMAT ===
+Stanje: BGMRWBRBWMMYWRGGMGMYYRGWRGBRMYRBRWWGBMGYYGWWRWBYYMBMYB

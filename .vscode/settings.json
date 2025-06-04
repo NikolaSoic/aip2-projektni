@@ -9,5 +9,11 @@
     "git.confirmSync": false,
     "workbench.iconTheme": "monospace-icons",
     "window.menuBarVisibility": "visible",
-    "terminal.integrated.focusAfterRun": "terminal"
+    "terminal.integrated.focusAfterRun": "terminal",
+    "files.associations": {
+        "random": "cpp",
+        "fstream": "cpp",
+        "iostream": "cpp",
+        "numeric": "cpp"
+    }
 }
