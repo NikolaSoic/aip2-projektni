@@ -781,3 +781,55 @@ void zavrsiIgru()
     // Automatski spremi rezultat
     automatskoSpremiRezultat();
 }
+void ispisiNaslov()
+{
+    cout << "\n";
+    cout << "========================================" << endl;
+    cout << "         RUBIKOVA KOCKA 3D             " << endl;
+    cout << "        Natjecanje igrača              " << endl;
+    cout << "========================================" << endl;
+}
+
+void ispisiPravila()
+{
+    cout << "\n=== PRAVILA IGRE ===" << endl;
+    cout << "1. Cilj je riješiti Rubikovu kocku - svaka strana mora biti jedne boje" << endl;
+    cout << "2. Kocka ima 6 strana sa bojama:" << endl;
+    cout << "   W = Bijela (Gornja)    O = Narančasta (Lijeva)" << endl;
+    cout << "   G = Zelena (Prednja)   R = Crvena (Desna)" << endl;
+    cout << "   B = Plava (Stražnja)   Y = Žuta (Donja)" << endl;
+    cout << "3. Potezi rotiraju lica kocke:" << endl;
+    cout << "   F/F' = Prednja strana  R/R' = Desna strana" << endl;
+    cout << "   L/L' = Lijeva strana   U/U' = Gornja strana" << endl;
+    cout << "   D/D' = Donja strana    B/B' = Stražnja strana" << endl;
+    cout << "   (Znak ' = rotacija u suprotnom smjeru)" << endl;
+    cout << "4. Riješite kocku u najmanjem vremenu s najmanjim brojem poteza!" << endl;
+    cout << "5. Rezultati se automatski spremaju u leaderboard!" << endl;
+    cout << "6. Na početku svake igre unesete ime igrača!" << endl;
+}
+
+void ispisiStatistike()
+{
+    cout << "\n=== TRENUTNA IGRA ===" << endl;
+    if (igra_aktivna)
+    {
+        cout << "Igrač: " << trenutni_igrac << endl;
+        cout << "Status: AKTIVNA" << endl;
+        double trenutno = trenutno_vrijeme() - pocetno_vrijeme;
+        printf("Vrijeme: %.0f sekundi\n", trenutno);
+        cout << "Potezi: " << ukupan_broj_poteza << endl;
+        cout << "Riješeno: " << (jeLiRiješeno() ? "DA" : "NE") << endl;
+    }
+    else
+    {
+        if (strlen(trenutni_igrac) > 0)
+        {
+            cout << "Zadnji igrač: " << trenutni_igrac << endl;
+        }
+        cout << "Status: NEAKTIVNA" << endl;
+        if (ukupan_broj_poteza > 0)
+        {
+            cout << "Zadnji rezultat - Potezi: " << ukupan_broj_poteza << endl;
+        }
+    }
+}
