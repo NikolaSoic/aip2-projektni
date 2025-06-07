@@ -1,10 +1,12 @@
+
 #include <iostream>
 #include <fstream>
 #include <algorithm>
 #include <string.h>
 #include <numeric>
-#include <cmath>
 #include <ctime>
+#include <cstdlib>
+#include <vector>
 
 using namespace std;
 
@@ -15,24 +17,33 @@ using namespace std;
 #define ZUTA 'Y'
 #define NARANCASTA 'O'
 #define BIJELA 'W'
-#define MAX_REZULTATA 100
+#define MAX_REZULTATA 1000
 
-char kocka[6][VELICINA][VELICINA];
-
-// Globalne varijable za mjerenje vremena i leaderboard
-int ukupan_broj_poteza = 0;
-double pocetno_vrijeme = 0;
-bool igra_aktivna = false;
-char trenutni_igrac[50] = ""; // Ime trenutnog igrača
-                              // Struktura za rezultat
+// Struktura za čuvanje rezultata
 struct Rezultat
 {
     char ime[50];
     double vrijeme;
     int broj_poteza;
-    char datum[30];
     bool rijeseno;
+    char datum[30];
 };
+
+// Struktura za čuvanje stanja kocke
+struct StanjeKocke
+{
+    char kocka[6][3][3];
+    char ime_igraca[50];
+    int broj_poteza;
+    double proteklo_vrijeme;
+};
+
+// Globalne varijable
+char kocka[6][3][3]; // 6 strana kocke, svaka 3x3
+char trenutni_igrac[50] = "";
+bool igra_aktivna = false;
+double pocetno_vrijeme = 0;
+int ukupan_broj_poteza = 0;
 
 // Enum za lica kocke
 enum Lice
@@ -45,22 +56,27 @@ enum Lice
     DONJE = 5     // Žuta (Y)
 };
 
-// Funkcije za vrijeme
+// Deklaracije funkcija
+void automatskoSpremiRezultat();
+void zavrsiIgru();
+
+// Funkcije za rad s vremenom
 double trenutno_vrijeme()
 {
     return (double)time(NULL);
 }
 
+// Funkcija za formatiranje datuma
 void trenutni_datum(char *buffer)
 {
     time_t rawtime;
     struct tm *timeinfo;
-
     time(&rawtime);
     timeinfo = localtime(&rawtime);
-
     strftime(buffer, 30, "%Y-%m-%d %H:%M:%S", timeinfo);
 }
+
+// Inicijalizacija riješene kocke
 void inicijalizirajKocku()
 {
     char boje[] = {BIJELA, NARANCASTA, ZELENA, CRVENA, PLAVA, ZUTA};
@@ -76,6 +92,7 @@ void inicijalizirajKocku()
     }
 }
 
+// Funkcija za ispis obojenih kvadrata
 void ispisiKvadratBoje(char boja)
 {
     switch (boja)
@@ -98,9 +115,13 @@ void ispisiKvadratBoje(char boja)
     case BIJELA:
         cout << "[\x1b[47m \x1b[0m]";
         break;
+    default:
+        cout << "[" << boja << "]";
+        break;
     }
 }
 
+// Ispis kocke s bojama
 void ispisiKocku()
 {
     cout << "\n=== RUBIKOVA KOCKA ===" << endl;
@@ -155,8 +176,9 @@ void ispisiKocku()
         cout << endl;
     }
     cout << endl;
-} 
+}
 
+// Rotacija lica u smjeru kazaljke na satu
 void rotirajLiceUSmjeruKazaljke(int lice)
 {
     char temp[VELICINA][VELICINA];
@@ -176,6 +198,7 @@ void rotirajLiceUSmjeruKazaljke(int lice)
     }
 }
 
+// Rotacija lica suprotno od kazaljke na satu
 void rotirajLiceProtivKazaljke(int lice)
 {
     rotirajLiceUSmjeruKazaljke(lice);
@@ -387,41 +410,70 @@ void rotirajBPrim()
     rotirajB();
 }
 
+// Izvršavanje poteza na osnovu stringa
 void izvrsiPotez(const char *potez)
 {
-    ukupan_broj_poteza++;
-
     if (strcmp(potez, "F") == 0)
+    {
         rotirajF();
+    }
     else if (strcmp(potez, "F'") == 0)
+    {
         rotirajFPrim();
+    }
     else if (strcmp(potez, "R") == 0)
+    {
         rotirajR();
+    }
     else if (strcmp(potez, "R'") == 0)
+    {
         rotirajRPrim();
+    }
     else if (strcmp(potez, "U") == 0)
+    {
         rotirajU();
+    }
     else if (strcmp(potez, "U'") == 0)
+    {
         rotirajUPrim();
+    }
     else if (strcmp(potez, "L") == 0)
+    {
         rotirajL();
+    }
     else if (strcmp(potez, "L'") == 0)
+    {
         rotirajLPrim();
+    }
     else if (strcmp(potez, "D") == 0)
+    {
         rotirajD();
+    }
     else if (strcmp(potez, "D'") == 0)
+    {
         rotirajDPrim();
+    }
     else if (strcmp(potez, "B") == 0)
+    {
         rotirajB();
+    }
     else if (strcmp(potez, "B'") == 0)
+    {
         rotirajBPrim();
+    }
     else
     {
         cout << "Nepoznat potez: " << potez << endl;
-        ukupan_broj_poteza--; // Vrati brojač jer potez nije valjan
+        return;
+    }
+
+    if (igra_aktivna)
+    {
+        ukupan_broj_poteza++;
     }
 }
 
+// Miješanje kocke
 void promijesajKocku(int broj_poteza)
 {
     cout << "Miješam kocku sa " << broj_poteza << " poteza..." << endl;
@@ -429,18 +481,16 @@ void promijesajKocku(int broj_poteza)
     const char *mogući_potezi[] = {"F", "F'", "R", "R'", "U", "U'", "L", "L'", "D", "D'", "B", "B'"};
     int broj_mogućih = 12;
 
-    // Jednostavan način generiranja pseudo-slučajnih brojeva
-    int seed = (int)(trenutno_vrijeme() * 1000) % 32768;
+    srand(time(NULL));
+
+    // Privremeno isključi brojanje poteza
+    bool temp_igra = igra_aktivna;
+    igra_aktivna = false;
 
     for (int i = 0; i < broj_poteza; i++)
     {
-        seed = (seed * 1103515245 + 12345) % (1 << 31);
-        int index = abs(seed) % broj_mogućih;
-
+        int index = rand() % broj_mogućih;
         const char *potez = mogući_potezi[index];
-
-        // Izvršava stvarni potez na kocki bez brojanja
-        ukupan_broj_poteza--; // Kompenzacija jer izvrsiPotez uvećava brojač
         izvrsiPotez(potez);
 
         cout << "Potez " << (i + 1) << ": " << potez << " ";
@@ -449,8 +499,13 @@ void promijesajKocku(int broj_poteza)
     }
     cout << endl
          << "Kocka je pomiješana!" << endl;
+
+    // Vrati stanje igre
+    igra_aktivna = temp_igra;
+    ukupan_broj_poteza = 0; // Reset brojač poteza nakon miješanja
 }
 
+// Provjera da li je kocka riješena
 bool jeLiRiješeno()
 {
     for (int lice = 0; lice < 6; lice++)
@@ -468,29 +523,6 @@ bool jeLiRiješeno()
         }
     }
     return true;
-}
-
-void spremiRezultat(const char *ime)
-{
-    double vrijeme_igre = igra_aktivna ? (trenutno_vrijeme() - pocetno_vrijeme) : 0;
-
-    // Spremi u tekstualnu datoteku
-    ofstream datoteka("leaderboard.txt", ios::app);
-    if (datoteka.is_open())
-    {
-        char datum[30];
-        trenutni_datum(datum);
-
-        datoteka << ime << "," << vrijeme_igre << "," << ukupan_broj_poteza << ",";
-        datoteka << (jeLiRiješeno() ? "RIJESENO" : "NEDOVRSENO") << "," << datum << endl;
-        datoteka.close();
-        cout << "Rezultat uspješno spremljen u leaderboard!" << endl;
-        printf("Ime: %s, Vrijeme: %.0f sekundi, Potezi: %d\n", ime, vrijeme_igre, ukupan_broj_poteza);
-    }
-    else
-    {
-        cout << "Greška pri spremanju rezultata!" << endl;
-    }
 }
 
 // Automatsko spremanje rezultata na kraju igre
@@ -524,6 +556,99 @@ void automatskoSpremiRezultat()
     }
 }
 
+// Spremanje stanja igre u binarnu datoteku
+void spremiStanjeIgre()
+{
+    if (!igra_aktivna)
+    {
+        cout << "Nema aktivne igre za spremanje!" << endl;
+        return;
+    }
+
+    char ime_datoteke[100];
+    sprintf(ime_datoteke, "save_%s.dat", trenutni_igrac);
+
+    ofstream file(ime_datoteke, ios::binary);
+    if (file.is_open())
+    {
+        StanjeKocke stanje;
+
+        // Kopiraj stanje kocke
+        for (int i = 0; i < 6; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                    stanje.kocka[i][j][k] = kocka[i][j][k];
+                }
+            }
+        }
+
+        strcpy(stanje.ime_igraca, trenutni_igrac);
+        stanje.broj_poteza = ukupan_broj_poteza;
+        stanje.proteklo_vrijeme = trenutno_vrijeme() - pocetno_vrijeme;
+
+        file.write((char *)&stanje, sizeof(StanjeKocke));
+        file.close();
+
+        cout << "Igra spremljena u datoteku: " << ime_datoteke << endl;
+
+        // Pauziranje igre
+        igra_aktivna = false;
+    }
+    else
+    {
+        cout << "Greška pri spremanju igre!" << endl;
+    }
+}
+
+// Učitavanje stanja igre iz binarne datoteke
+bool ucitajStanjeIgre(const char *ime_igraca)
+{
+    char ime_datoteke[100];
+    sprintf(ime_datoteke, "save_%s.dat", ime_igraca);
+
+    ifstream file(ime_datoteke, ios::binary);
+    if (file.is_open())
+    {
+        StanjeKocke stanje;
+        file.read((char *)&stanje, sizeof(StanjeKocke));
+        file.close();
+
+        // Ucitaj stanje kocke
+        for (int i = 0; i < 6; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                    kocka[i][j][k] = stanje.kocka[i][j][k];
+                }
+            }
+        }
+
+        strcpy(trenutni_igrac, stanje.ime_igraca);
+        ukupan_broj_poteza = stanje.broj_poteza;
+        pocetno_vrijeme = trenutno_vrijeme() - stanje.proteklo_vrijeme;
+        igra_aktivna = true;
+
+        cout << "Igra uspješno učitana za igrača: " << trenutni_igrac << endl;
+        cout << "Potezi: " << ukupan_broj_poteza << endl;
+        printf("Proteklo vrijeme: %.0f sekundi\n", stanje.proteklo_vrijeme);
+
+        // Obriši save datoteku
+        remove(ime_datoteke);
+
+        return true;
+    }
+    else
+    {
+        cout << "Nema spremljene igre za igrača: " << ime_igraca << endl;
+        return false;
+    }
+}
+
 // Jednostavna implementacija sortiranja za nizove
 void sortirajRezultate(Rezultat *rezultati, int n)
 {
@@ -541,6 +666,7 @@ void sortirajRezultate(Rezultat *rezultati, int n)
     }
 }
 
+// Prikaz leaderboard-a
 void prikaziLeaderboard()
 {
     ifstream datoteka("leaderboard.txt");
@@ -714,6 +840,7 @@ void prikaziLeaderboard()
         }
     }
 }
+
 void zapocniNovuIgru()
 {
     // Prvo tražimo ime igrača
@@ -781,6 +908,29 @@ void zavrsiIgru()
     // Automatski spremi rezultat
     automatskoSpremiRezultat();
 }
+
+void nastaviOdZadnjegPokusaja()
+{
+    cout << "\n========================================" << endl;
+    cout << "        NASTAVI OD ZADNJEG POKUŠAJA      " << endl;
+    cout << "========================================" << endl;
+    cout << "Unesite ime igrača: ";
+    char ime_za_ucitavanje[50];
+    cin.ignore();
+    cin.getline(ime_za_ucitavanje, sizeof(ime_za_ucitavanje));
+
+    if (strlen(ime_za_ucitavanje) == 0)
+    {
+        cout << "Ime igrača ne može biti prazno!" << endl;
+        return;
+    }
+
+    if (ucitajStanjeIgre(ime_za_ucitavanje))
+    {
+        cout << "Igra je uspješno učitana i nastavljena!" << endl;
+    }
+}
+
 void ispisiNaslov()
 {
     cout << "\n";
@@ -806,6 +956,7 @@ void ispisiPravila()
     cout << "4. Riješite kocku u najmanjem vremenu s najmanjim brojem poteza!" << endl;
     cout << "5. Rezultati se automatski spremaju u leaderboard!" << endl;
     cout << "6. Na početku svake igre unesete ime igrača!" << endl;
+    cout << "7. Možete spremiti igru i nastaviti kasnije pomoću opcije 'Nastavi od zadnjeg pokušaja'" << endl;
 }
 
 void ispisiStatistike()
@@ -844,7 +995,7 @@ int main()
 
     while (true)
     {
-// Čišćenje ekrana
+        // Čišćenje ekrana
 #ifdef _WIN32
         system("cls");
 #else
@@ -861,7 +1012,9 @@ int main()
         cout << "4. Izvrši potez" << endl;
         cout << "5. Prikaži leaderboard" << endl;
         cout << "6. Završi trenutnu igru" << endl;
-        cout << "7. Izlaz" << endl;
+        cout << "7. Spremi trenutnu igru" << endl;
+        cout << "8. Nastavi od zadnjeg pokušaja" << endl;
+        cout << "9. Izlaz" << endl;
         cout << "\nUnesite vaš izbor: ";
         cin >> izbor;
 
@@ -905,7 +1058,7 @@ int main()
         {
             if (!igra_aktivna)
             {
-                cout << "Igra nije aktivna! Prvo započnite novu igru." << endl;
+                cout << "Igra nije aktivna! Prvo započnite novu igru ili nastavite od zadnjeg pokušaja." << endl;
             }
             else
             {
@@ -962,15 +1115,51 @@ int main()
 
         case 7:
         {
+            if (!igra_aktivna)
+            {
+                cout << "Nema aktivne igre za spremanje!" << endl;
+            }
+            else
+            {
+                spremiStanjeIgre();
+            }
+
+            cout << "\nPritisnite Enter za nastavak...";
+            cin.ignore();
+            cin.get();
+            break;
+        }
+
+        case 8:
+        {
+            nastaviOdZadnjegPokusaja();
+
+            cout << "\nPritisnite Enter za nastavak...";
+            cin.ignore();
+            cin.get();
+            break;
+        }
+
+        case 9:
+        {
             // Ako je igra aktivna, pitaj da li želi završiti
             if (igra_aktivna)
             {
-                cout << "Imate aktivnu igru! Želite li je završiti prije izlaska? (d/n): ";
-                char odgovor;
-                cin >> odgovor;
-                if (odgovor == 'd' || odgovor == 'D')
+                cout << "Imate aktivnu igru! Želite li je:" << endl;
+                cout << "1. Završiti i spremiti rezultat" << endl;
+                cout << "2. Spremiti za kasnije" << endl;
+                cout << "3. Izaći bez spremanja" << endl;
+                cout << "Vaš izbor (1-3): ";
+                int opcija;
+                cin >> opcija;
+
+                if (opcija == 1)
                 {
                     zavrsiIgru();
+                }
+                else if (opcija == 2)
+                {
+                    spremiStanjeIgre();
                 }
             }
 
